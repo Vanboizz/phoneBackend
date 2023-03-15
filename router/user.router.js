@@ -1,8 +1,16 @@
-const express = require("express")
-const router= express.Router()
+const express = require("express");
+const router = express.Router();
 
-const userController = require("../controller/user.controller")
+const userController = require("../controller/user.controller");
+const auth = require("../middleware/auth");
+//register
+router.post("/register", userController.register);
+//login
+router.post("/login", userController.login);
+//get new token when jwt expried
+router.post("/token", userController.token);
 
-router.post("/register", userController.register)
+//get user
+router.get("/user/:id", auth, userController.getUserById);
 
-module.exports = router
+module.exports = router;
