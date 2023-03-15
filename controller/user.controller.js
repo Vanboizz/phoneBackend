@@ -9,7 +9,7 @@ const register = (req, res) => {
     const queryInsert =
       "insert into users(fullname,email,password) values(?,?,?)";
     if (fullname === "" || email === "" || password === "") {
-      res.json({
+      res.status(500).json({
         success: false,
         message: "Please fill in all field",
       });
@@ -19,7 +19,7 @@ const register = (req, res) => {
           if (err) {
             throw err;
           } else {
-            res.json({
+            res.status(500).json({
               success: false,
               message: "This email have been already existed",
             });
@@ -36,7 +36,7 @@ const register = (req, res) => {
                   if (err) {
                     throw err;
                   } else {
-                    res.json({
+                    res.status(200).json({
                       success: true,
                       message: "The user has been registerd with us!",
                     });
@@ -49,7 +49,7 @@ const register = (req, res) => {
       });
     }
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: "Server is error",
     });
@@ -65,7 +65,7 @@ const login = (req, res) => {
     const update = "update users set refreshToken = ? where email = ?";
     db.connection.query(querySelect, [email], (error, result) => {
       if (!result[0]) {
-        res.json({
+        res.status(500).json({
           success: false,
           message: "Invalid Email",
         });
@@ -94,27 +94,27 @@ const login = (req, res) => {
             }
           );
           db.connection.query(update, [refreshToken, email]);
-          res.json({
+          res.status(200).json({
             success: true,
             message: "Login is successfully",
             accessToken: accessToken,
             refreshToken: refreshToken,
           });
         } else {
-          res.json({
+          res.status(500).json({
             success: false,
             message: "Invalid Password",
           });
         }
       } else {
-        res.json({
+        res.status(500).json({
           success: false,
           message: "Invalid Email And Password",
         });
       }
     });
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: "Server Is Error",
     });

@@ -16,7 +16,7 @@ app.use(bodyParser.json());
 app.use(express.json());
 
 //Router
-router(app);
+app.use(router)
 
 //Run Server
 app.listen(8000, () => {
