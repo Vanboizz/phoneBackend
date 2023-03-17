@@ -1,26 +1,31 @@
 const jwt = require("jsonwebtoken");
+const db = require("../connect/database");
 
-const auth = (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   let token = req.get("authorization");
   if (token) {
     token = token.slice(7);
     jwt.verify(token, process.env.APP_ACCESS_TOKEN, (err, decoded) => {
       if (err) {
-        res.json({
+        res.status(401).json({
           success: false,
           message: "Invalid Token",
         });
       } else {
-        req.decoded = decoded;
+        req.auth = {
+          id: decoded.idusers,
+          email: decoded.email,
+          role: decoded.role,
+        };
         next();
       }
     });
   } else {
-    res.json({
+    res.status(500).json({
       success: false,
       message: "Access denied! authorized",
     });
   }
 };
 
-module.exports = auth;
+module.exports = authenticateToken;

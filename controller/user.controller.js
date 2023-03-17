@@ -7,7 +7,7 @@ const register = (req, res) => {
     const { fullname, email, password } = req.body;
     const querySelect = "select email,password from users where email = ?";
     const queryInsert =
-      "insert into users(fullname,email,password) values(?,?,?)";
+      "insert into users(fullname,email,password,role) values(?,?,?,?)";
     if (fullname === "" || email === "" || password === "") {
       res.status(500).json({
         success: false,
@@ -19,7 +19,7 @@ const register = (req, res) => {
           if (err) {
             throw err;
           } else {
-            res.status(500).json({
+            res.status(401).json({
               success: false,
               message: "This email have been already existed",
             });
@@ -31,7 +31,7 @@ const register = (req, res) => {
             } else {
               db.connection.query(
                 queryInsert,
-                [fullname, email, hash],
+                [fullname, email, hash, "user"],
                 (err) => {
                   if (err) {
                     throw err;
@@ -61,11 +61,11 @@ const login = (req, res) => {
   try {
     const { email, password } = req.body;
     const querySelect =
-      "select idusers,email,password,fullname,gender,dateofbirth,phonenumber,province,district,wards,address from users where email = ?";
+      "select idusers,role,email,password,fullname,gender,dateofbirth,phonenumber,province,district,wards,address from users where email = ?";
     const update = "update users set refreshToken = ? where email = ?";
     db.connection.query(querySelect, [email], (error, result) => {
       if (!result[0]) {
-        res.status(500).json({
+        res.status(401).json({
           success: false,
           message: "Invalid Email",
         });
@@ -77,7 +77,11 @@ const login = (req, res) => {
         if (comparePassword) {
           //access token
           const accessToken = jwt.sign(
-            { result: result },
+            {
+              idusers: result[0].idusers,
+              role: result[0].role,
+              email: result[0].email,
+            },
             process.env.APP_ACCESS_TOKEN,
             {
               expiresIn: "1m",
@@ -86,7 +90,9 @@ const login = (req, res) => {
           //refresh token
           const refreshToken = jwt.sign(
             {
-              result: result,
+              idusers: result[0].idusers,
+              role: result[0].role,
+              email: result[0].email,
             },
             process.env.APP_REFRESH_TOKEN,
             {
@@ -101,13 +107,13 @@ const login = (req, res) => {
             refreshToken: refreshToken,
           });
         } else {
-          res.status(500).json({
+          res.status(401).json({
             success: false,
             message: "Invalid Password",
           });
         }
       } else {
-        res.status(500).json({
+        res.status(401).json({
           success: false,
           message: "Invalid Email And Password",
         });
@@ -129,26 +135,32 @@ const token = (req, res) => {
     if (refreshToken) {
       db.connection.query(querySelect, [refreshToken], (err, result) => {
         if (!result[0]) {
-          res.json({ success: false, message: "Invalid RefreshToken" });
+          res
+            .status(401)
+            .json({ success: false, message: "Invalid RefreshToken" });
         } else {
           const token = jwt.sign(
-            { result: result[0].email },
+            {
+              idusers: result[0].idusers,
+              role: result[0].role,
+              email: result[0].email,
+            },
             process.env.APP_ACCESS_TOKEN,
             { expiresIn: "1m" }
           );
-          res.json({
+          res.status(200).json({
             token: token,
           });
         }
       });
     } else {
-      res.json({
+      res.status(401).json({
         success: false,
         message: "Invalid request",
       });
     }
   } catch (error) {
-    res.json({
+    res.status(500).json({
       success: false,
       message: "Server Is Error",
     });
@@ -156,17 +168,26 @@ const token = (req, res) => {
 };
 
 const getUserById = (req, res) => {
-  const querySelect = "select * from users where idusers = ?";
-  db.connection.query(querySelect, [req.params.id], (err, result) => {
-    if (err) throw err;
-    else {
-      res.json(result);
-    }
-  });
+  if (!req.auth) {
+    res.status(200).json({
+      check: "OKE",
+    });
+  } else {
+    res.status(200).json({
+      check: req.auth.role,
+    });
+  }
 };
+
+const forgotpassword = (req, res) => {};
+
+const changepassword = (req, res) => {};
+
 module.exports = {
   register,
   login,
   token,
   getUserById,
+  forgotpassword,
+  changepassword,
 };
