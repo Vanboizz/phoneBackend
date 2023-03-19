@@ -1,6 +1,16 @@
 const db = require("../connect/database");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const decode = require("jwt-decode");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "20522147@gm.uit.edu.vn",
+    pass: process.env.APP_PASSOFEMAIL,
+  },
+});
 //register
 const register = (req, res) => {
   try {
@@ -8,13 +18,15 @@ const register = (req, res) => {
     const querySelect = "select email,password from users where email = ?";
     const queryInsert =
       "insert into users(fullname,email,password,role) values(?,?,?,?)";
+    // Kiểm tra rỗng
     if (fullname === "" || email === "" || password === "") {
-      res.status(500).json({
+      res.status(400).json({
         success: false,
         message: "Please fill in all field",
       });
     } else {
       db.connection.query(querySelect, [email], (err, result) => {
+        // Kiểm tra email tồn tại
         if (result.length > 0) {
           if (err) {
             throw err;
@@ -25,6 +37,7 @@ const register = (req, res) => {
             });
           }
         } else {
+          // hash
           bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
               throw err;
@@ -167,6 +180,7 @@ const token = (req, res) => {
   }
 };
 
+//test authetication
 const getUserById = (req, res) => {
   if (!req.auth) {
     res.status(200).json({
@@ -179,9 +193,95 @@ const getUserById = (req, res) => {
   }
 };
 
-const forgotpassword = (req, res) => {};
+//forgot password
+const forgotpassword = (req, res) => {
+  try {
+    const { email } = req.body;
+    const query = "select * from users where email = ?";
+    db.connection.query(query, [email], (err, result) => {
+      if (result.length <= 0) {
+        res.status(401).json({
+          success: false,
+          message: "Invalid email",
+        });
+      } else {
+        const accessToken = jwt.sign(
+          {
+            idusers: result[0].idusers,
+            role: result[0].role,
+            email: result[0].email,
+          },
+          process.env.APP_ACCESS_TOKEN,
+          {
+            expiresIn: "1m",
+          }
+        );
+        const mailOptions = {
+          from: "20522147@gm.uit.edu.vn",
+          to: result[0].email,
+          subject: "Sending Email using Node.js[nodemailer]",
+          html: `<p>Please use the below token to reset your password with the <a href="http://localhost:3000/changepassword/${accessToken}">Link</a> api route:</p>`,
+        };
+        transporter.sendMail(mailOptions, (err, info) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(info.response);
+          }
+        });
+        res.status(200).json({
+          success: true,
+          message: "Success",
+        });
+      }
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: "Not exists email",
+    });
+  }
+};
 
-const changepassword = (req, res) => {};
+//change password
+const changepassword = (req, res) => {
+  try {
+    const password = req.body.password;
+    const token = req.params.accessToken;
+    const { email } = decode(token);
+    const roundNumber = 10;
+    bcrypt.genSalt(roundNumber, (error, salt) => {
+      if (error) {
+        throw error;
+      } else {
+        bcrypt.hash(password, salt, (error, hash) => {
+          if (error) {
+            throw error;
+          } else {
+            var data = {
+              password: hash,
+            };
+            db.connection.query(
+              `update users set password = '${data.password}' where email = '${email}'`,
+              (error, result) => {
+                if (error) {
+                  throw error;
+                } else {
+                  res.status(200).json({
+                    message: "Update is succesfully",
+                  });
+                }
+              }
+            );
+          }
+        });
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server is error",
+    });
+  }
+};
 
 module.exports = {
   register,

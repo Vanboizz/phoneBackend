@@ -11,7 +11,7 @@ router.post("/login", userController.login);
 //forgot password
 router.post("/forgotpassword", userController.forgotpassword);
 //change passoword
-router.post("/changepassword", userController.changepassword);
+router.post("/changepassword/:accessToken", userController.changepassword);
 
 //get new token when jwt expried
 router.post("/token", userController.token);
