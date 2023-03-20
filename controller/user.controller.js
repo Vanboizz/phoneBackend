@@ -232,6 +232,7 @@ const forgotpassword = (req, res) => {
         res.status(200).json({
           success: true,
           message: "Success",
+          accessToken: accessToken,
         });
       }
     });
@@ -251,11 +252,11 @@ const changepassword = (req, res) => {
     const roundNumber = 10;
     bcrypt.genSalt(roundNumber, (error, salt) => {
       if (error) {
-        throw error;
+        res.status(400);
       } else {
         bcrypt.hash(password, salt, (error, hash) => {
           if (error) {
-            throw error;
+            res.status(400);
           } else {
             var data = {
               password: hash,
@@ -264,7 +265,7 @@ const changepassword = (req, res) => {
               `update users set password = '${data.password}' where email = '${email}'`,
               (error, result) => {
                 if (error) {
-                  throw error;
+                  res.status(400);
                 } else {
                   res.status(200).json({
                     message: "Update is succesfully",
