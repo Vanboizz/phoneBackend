@@ -61,7 +61,7 @@ const getCart = (req, res) => {
   try {
     const idusers = req.auth.id;
     const querySelect =
-      "select * ,(SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color', (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor)) FROM color WHERE color.idsize = cart.idsize))) FROM size WHERE size.idsize = cart.idsize ) size,(SELECT JSON_ARRAYAGG(avt) FROM image WHERE image.idproducts = products.idproducts) image from products,cart where idusers = 4 and cart.idproducts = products.idproducts;";
+      "select * ,(SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color', (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor)) FROM color WHERE color.idcolor = cart.idcolor))) FROM size WHERE size.idsize = cart.idsize ) size,(SELECT JSON_ARRAYAGG(avt) FROM image WHERE image.idproducts = products.idproducts) image from products,cart where idusers = ? and cart.idproducts = products.idproducts;";
     db.connection.query(querySelect, [idusers], (error, result) => {
       if (error) throw error;
       else {
@@ -80,7 +80,35 @@ const getCart = (req, res) => {
   }
 };
 
+const deleteCart = (req, res) => {
+  try {
+    const { idsize, idcolor } = req.params;
+    const idusers = req.auth.id;
+    const querySelect =
+      "select * from cart where idsize = ? and idcolor = ?  and idusers = ?";
+    const queryDelete = "delete from cart where idsize = ? and idcolor = ?";
+    // kiểm tra sản phẩm tồn tại trong giỏ hàng hay chưa
+    db.connection.query(
+      querySelect,
+      [idsize, idcolor, idusers],
+      (error, result) => {
+        if (error) throw error;
+        // nếu sản phẩm tồn tai trong giỏ hàng thì thực hiện xóa
+        if (result.length > 0) {
+          db.connection.query(queryDelete, [idsize, idcolor], (error) => {
+            if (error) throw error;
+            res.status(200);
+          });
+        }
+      }
+    );
+  } catch (error) {
+    res.status(400).json({ message: "Error Server" });
+  }
+};
+
 module.exports = {
   addCart,
   getCart,
+  deleteCart,
 };
