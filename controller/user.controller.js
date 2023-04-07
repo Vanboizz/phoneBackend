@@ -97,7 +97,7 @@ const login = (req, res) => {
             },
             process.env.APP_ACCESS_TOKEN,
             {
-              expiresIn: "1m",
+              expiresIn: "1y",
             }
           );
           //refresh token

@@ -5,15 +5,16 @@ const app = express();
 const router = require("./router/index");
 const cors = require("cors");
 
+// JSON
+app.use(express.json());
+
+//cors
 app.use(cors())
 
 // Body Parser
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-
-// JSON
-app.use(express.json());
 
 //Router
 app.use(router)
