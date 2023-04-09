@@ -107,8 +107,84 @@ const deleteCart = (req, res) => {
   }
 };
 
+const increaseQuantity = (req, res) => {
+  try {
+    const { idsize, idcolor } = req.body;
+    const idusers = req.auth.id;
+    const querySelect =
+      "select * from cart where idsize = ? and idcolor = ? and idusers = ?";
+    const queryUpdate =
+      "Update cart set quantity = ? where idsize = ? and idcolor = ?";
+    db.connection.query(
+      querySelect,
+      [idsize, idcolor, idusers],
+      (error, result) => {
+        if (error) throw error;
+        if (result.length) {
+          const increaseQuantity = result[0].quantity + 1;
+          db.connection.query(
+            queryUpdate,
+            [increaseQuantity, idsize, idcolor],
+            (error) => {
+              if (error) throw error;
+              res.status(200).json({
+                result: {
+                  ...result[0],
+                  increaseQuantity: increaseQuantity,
+                },
+                message: "Update quantity is successfull",
+              });
+            }
+          );
+        }
+      }
+    );
+  } catch (error) {
+    res.status(400).json({ message: "Error Server" });
+  }
+};
+
+const decreaseQuantity = (req, res) => {
+  try {
+    const { idsize, idcolor } = req.body;
+    const idusers = req.auth.id;
+    const querySelect =
+      "select * from cart where idsize = ? and idcolor = ? and idusers = ?";
+    const queryUpdate =
+      "Update cart set quantity = ? where idsize = ? and idcolor = ?";
+    db.connection.query(
+      querySelect,
+      [idsize, idcolor, idusers],
+      (error, result) => {
+        if (error) throw error;
+        if (result.length) {
+          const decreaseQuantity = result[0].quantity - 1;
+          db.connection.query(
+            queryUpdate,
+            [decreaseQuantity, idsize, idcolor],
+            (error) => {
+              if (error) throw error;
+              res.status(200).json({
+                result: {
+                  ...result[0],
+                  decreaseQuantity: decreaseQuantity,
+                },
+                message: "Update quantity is successfull",
+              });
+            }
+          );
+        }
+      }
+    );
+  } catch (error) {
+    res.status(400).json({ message: "Error Server" });
+  }
+};
+
 module.exports = {
   addCart,
   getCart,
   deleteCart,
+  increaseQuantity,
+  decreaseQuantity,
 };
