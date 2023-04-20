@@ -181,10 +181,23 @@ const decreaseQuantity = (req, res) => {
   }
 };
 
+const deleteAllCart = (req, res) => {
+  try {
+    const idusers = req.auth.id;
+    const queryDelete = "delete from cart where idusers = ?";
+    db.connection.query(queryDelete, [idusers], (error, result) => {
+      if (error) throw error;
+      res.status(200).json({ message: "Delete all cart is successfull" });
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Error Server" });
+  }
+};
 module.exports = {
   addCart,
   getCart,
   deleteCart,
   increaseQuantity,
   decreaseQuantity,
+  deleteAllCart,
 };

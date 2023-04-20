@@ -14,12 +14,12 @@ const transporter = nodemailer.createTransport({
 //register
 const register = (req, res) => {
   try {
-    const { fullname, email, password } = req.body;
+    const { fullname, phonenumber, email, password } = req.body;
     const querySelect = "select email,password from users where email = ?";
     const queryInsert =
-      "insert into users(fullname,email,password,role) values(?,?,?,?)";
+      "insert into users(fullname,phonenumber,email,password,role) values(?,?,?,?,?)";
     // Kiểm tra rỗng
-    if (fullname === "" || email === "" || password === "") {
+    if (fullname === "" || phonenumber === "" || email === "" || password === "") {
       res.status(400).json({
         success: false,
         message: "Please fill in all field",
@@ -44,7 +44,7 @@ const register = (req, res) => {
             } else {
               db.connection.query(
                 queryInsert,
-                [fullname, email, hash, "user"],
+                [fullname, phonenumber, email, hash, "user"],
                 (err) => {
                   if (err) {
                     throw err;
@@ -182,14 +182,17 @@ const token = (req, res) => {
 
 //test authetication
 const getUserById = (req, res) => {
-  if (!req.auth) {
-    res.status(200).json({
-      check: "OKE",
+  try {
+    const idusers = req.auth.id;
+    const querySelect = "select * from users where idusers = ? ";
+    db.connection.query(querySelect, [idusers], (error, result) => {
+      if (error) throw error;
+      else {
+        res.status(200).json(result);
+      }
     });
-  } else {
-    res.status(200).json({
-      check: req.auth.role,
-    });
+  } catch (error) {
+    res.status(400).json({ message: "Error Server" });
   }
 };
 

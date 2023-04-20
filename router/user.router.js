@@ -17,6 +17,6 @@ router.post("/changepassword/:accessToken", userController.changepassword);
 router.post("/token", userController.token);
 
 //get user
-router.get("/user", authenticateToken, userController.getUserById);
+router.get("/getuser", authenticateToken, userController.getUserById);
 
 module.exports = router;
