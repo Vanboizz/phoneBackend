@@ -1,5 +1,5 @@
 //config env
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const router = require("./router/index");
@@ -9,7 +9,7 @@ const cors = require("cors");
 app.use(express.json());
 
 //cors
-app.use(cors())
+app.use(cors());
 
 // Body Parser
 const bodyParser = require("body-parser");
@@ -17,7 +17,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //Router
-app.use(router)
+app.use(router);
 
 //Run Server
 app.listen(8000, () => {
