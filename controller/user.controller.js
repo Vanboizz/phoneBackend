@@ -19,7 +19,12 @@ const register = (req, res) => {
     const queryInsert =
       "insert into users(fullname,phonenumber,email,password,role) values(?,?,?,?,?)";
     // Kiểm tra rỗng
-    if (fullname === "" || phonenumber === "" || email === "" || password === "") {
+    if (
+      fullname === "" ||
+      phonenumber === "" ||
+      email === "" ||
+      password === ""
+    ) {
       res.status(400).json({
         success: false,
         message: "Please fill in all field",
@@ -200,6 +205,7 @@ const getUserById = (req, res) => {
 const forgotpassword = (req, res) => {
   try {
     const { email } = req.body;
+    const random = Math.floor(100000 + Math.random() * 900000);
     const query = "select * from users where email = ?";
     db.connection.query(query, [email], (err, result) => {
       if (result.length <= 0) {
@@ -223,7 +229,7 @@ const forgotpassword = (req, res) => {
           from: "20522147@gm.uit.edu.vn",
           to: result[0].email,
           subject: "Sending Email using Node.js[nodemailer]",
-          html: `<p>Please use the below token to reset your password with the <a href="http://localhost:3000/changepassword/${accessToken}">Link</a> api route:</p>`,
+          html: `<p>My code is: ${random}</p>`,
         };
         transporter.sendMail(mailOptions, (err, info) => {
           if (err) {
@@ -287,6 +293,28 @@ const changepassword = (req, res) => {
   }
 };
 
+//update user
+const updateUser = (req, res) => {
+  try {
+    const { fullname, gender, dateofbirth, phonenumber } = req.body;
+    const idusers = req.auth.id;
+    const queryUpdate =
+      "update users set fullname = ?, gender = ?, dateofbirth = ?, phonenumber = ?  where idusers = ?";
+    db.connection.query(
+      queryUpdate,
+      [fullname, gender, dateofbirth, phonenumber, idusers],
+      (error) => {
+        if (error) throw error;
+        res.status(200).json({ message: "Update is successfull" });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({
+      message: "Server is error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -294,4 +322,5 @@ module.exports = {
   getUserById,
   forgotpassword,
   changepassword,
+  updateUser,
 };

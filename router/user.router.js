@@ -19,4 +19,7 @@ router.post("/token", userController.token);
 //get user
 router.get("/getuser", authenticateToken, userController.getUserById);
 
+//update user
+router.post("/updateUser", authenticateToken, userController.updateUser);
+
 module.exports = router;
