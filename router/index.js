@@ -1,7 +1,15 @@
 const userRouter = require("./user.router");
+const adminRouter = require("./admin.router");
+const productRouter = require("./product.router");
+const cartRouter = require("./cart.router");
+const checkoutRouter = require("./checkout.router");
+const express = require("express");
+const router = express.Router();
 
-function Router(app) {
-  app.use("/auth", userRouter);
-}
+router.use("/auth/admin", adminRouter);
+router.use("/auth/user", userRouter);
+router.use("/product", productRouter);
+router.use("/cart", cartRouter);
+router.use("/invoice", checkoutRouter);
 
-module.exports = Router;
+module.exports = router;
