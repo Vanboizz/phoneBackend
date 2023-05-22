@@ -229,7 +229,7 @@ const forgotpassword = (req, res) => {
           from: "20522147@gm.uit.edu.vn",
           to: result[0].email,
           subject: "Sending Email using Node.js[nodemailer]",
-          html: `<p>My code is: ${random}</p>`,
+          html: `<p>Please use the below token to reset your password with the <a href="http://localhost:3000/changepassword/${accessToken}">Link</a> api route:</p>`,
         };
         transporter.sendMail(mailOptions, (err, info) => {
           if (err) {
