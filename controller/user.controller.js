@@ -79,7 +79,7 @@ const login = (req, res) => {
   try {
     const { email, password } = req.body;
     const querySelect =
-      "select idusers,role,email,password,fullname,gender,dateofbirth,phonenumber,province,district,wards,address from users where email = ?";
+      "select * from users where email = ?";
     const update = "update users set refreshToken = ? where email = ?";
     db.connection.query(querySelect, [email], (error, result) => {
       if (!result[0]) {
@@ -296,13 +296,13 @@ const changepassword = (req, res) => {
 //update user
 const updateUser = (req, res) => {
   try {
-    const { fullname, gender, dateofbirth, phonenumber } = req.body;
+    const { fullname, email, phonenumber, gender, days, months, years} = req.body;
     const idusers = req.auth.id;
     const queryUpdate =
-      "update users set fullname = ?, gender = ?, dateofbirth = ?, phonenumber = ?  where idusers = ?";
+      "update users set fullname = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?";
     db.connection.query(
       queryUpdate,
-      [fullname, gender, dateofbirth, phonenumber, idusers],
+      [fullname, email, phonenumber, gender, days, months, years, idusers],
       (error) => {
         if (error) throw error;
         res.status(200).json({ message: "Update is successfull" });
