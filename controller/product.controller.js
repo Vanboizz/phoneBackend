@@ -48,12 +48,14 @@ const addProduct = (req, res) => {
             }
           );
         });
+
         images.map((image) => {
           cloudinary.uploader
             .upload(image, {
               upload_preset: "products",
             })
             .then((response) => {
+              console.log(response);
               const publicIds = response.public_id;
               db.connection.query(
                 insertImage,
