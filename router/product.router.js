@@ -16,5 +16,7 @@ router.get("/getproduct", productController.getProduct);
 // remove product
 router.delete("/removeproduct", authenticateToken, productController.removeProduct);
 
+// get category
+router.get("/getcategory", productController.getCategory);
 
 module.exports = router;
