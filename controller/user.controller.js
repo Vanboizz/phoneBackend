@@ -92,6 +92,7 @@ const login = (req, res) => {
           password,
           result[0].password
         );
+         
         if (comparePassword) {
           //access token
           const accessToken = jwt.sign(
