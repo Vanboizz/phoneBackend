@@ -11,6 +11,10 @@ const checkOut = (req, res) => {
       "insert into invoice(idusers,ivday,fullnamereceive,emailreceive,addressreceive,phonenumberreceive,statusiv,totalprice) values(?,now(),?,?,?,?,?,?)";
     const queryInsertInvoiceDetail =
       "insert into detailinvoice(idiv,idproducts,idsize,idcolor,idimage,price,quantity) values(?,?,?,?,?,?,?)";
+    const querySelectQuantity =
+      " SELECT color.idsize, color.idcolor, quantity from size,color where color.idsize = size.idsize and color.idsize = ? and color.idcolor = ?";
+    const queryUpdateQuantity =
+      "update color set quantity = ? where idsize = ? and idcolor = ?";
     db.connection.query(querySelect, [idusers], (error, result) => {
       if (error) throw error;
       if (result.length) {
@@ -54,9 +58,33 @@ const checkOut = (req, res) => {
                     price,
                     value.quantity,
                   ],
+                  (error) => {
+                    if (error) throw error;
+                  }
+                );
+              });
+            });
+            // Lấy số lượng cart
+            db.connection.query(querySelectCart, [idusers], (error, result) => {
+              if (error) throw error;
+              result.forEach((element) => {
+                // Lấy số lượng tồn
+                db.connection.query(
+                  querySelectQuantity,
+                  [element.idsize, element.idcolor],
                   (error, result) => {
                     if (error) throw error;
-                    return res.status(200).send();
+                    result.forEach((stock) => {
+                      const a = stock.quantity - element.quantity;
+                      // console.log(element.quantity);
+                      db.connection.query(
+                        queryUpdateQuantity,
+                        [a, stock.idsize, stock.idcolor],
+                        (error) => {
+                          res.status(200).send();
+                        }
+                      );
+                    });
                   }
                 );
               });

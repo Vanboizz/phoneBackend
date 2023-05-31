@@ -205,7 +205,6 @@ const getUserById = (req, res) => {
 const forgotpassword = (req, res) => {
   try {
     const { email } = req.body;
-    const random = Math.floor(100000 + Math.random() * 900000);
     const query = "select * from users where email = ?";
     db.connection.query(query, [email], (err, result) => {
       if (result.length <= 0) {

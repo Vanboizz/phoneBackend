@@ -8,4 +8,7 @@ router.post("/addproduct", productController.addProduct);
 //get product
 router.get("/getproduct", productController.getProduct);
 
+// get category
+router.get("/getcategory", productController.getCategory);
+
 module.exports = router;

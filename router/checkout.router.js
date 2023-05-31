@@ -7,6 +7,6 @@ const auth = require("../middleware/auth");
 router.post("/checkout", auth, checkoutController.checkOut);
 
 // get checkout
-router.get("/getcheckout",auth,checkoutController.getCheckOut)
+router.get("/getcheckout", auth, checkoutController.getCheckOut);
 
 module.exports = router;
