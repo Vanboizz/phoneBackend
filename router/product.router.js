@@ -19,4 +19,7 @@ router.get("/getproduct", productController.getProduct);
 // get category
 router.get("/getcategory", productController.getCategory);
 
+// get category by id
+router.get("/getcategory/:id", productController.getCategorybyID)
+
 module.exports = router;

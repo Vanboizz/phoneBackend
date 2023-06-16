@@ -15,6 +15,7 @@ const authenticateToken = (req, res, next) => {
           id: decoded.idusers,
           email: decoded.email,
           role: decoded.role,
+          password: decoded.password,
         };
         next();
       }

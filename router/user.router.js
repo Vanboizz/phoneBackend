@@ -22,4 +22,7 @@ router.get("/getuser", authenticateToken, userController.getUserById);
 //update user
 router.post("/updateUser", authenticateToken, userController.updateUser);
 
+//create new password
+router.post("/createnewpassword", authenticateToken, userController.createnewpassword);
+
 module.exports = router;
