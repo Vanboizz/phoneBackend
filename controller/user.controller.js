@@ -92,7 +92,7 @@ const login = (req, res) => {
           password,
           result[0].password
         );
-         
+
         if (comparePassword) {
           //access token
           const accessToken = jwt.sign(
@@ -100,6 +100,7 @@ const login = (req, res) => {
               idusers: result[0].idusers,
               role: result[0].role,
               email: result[0].email,
+              password: result[0].password,
             },
             process.env.APP_ACCESS_TOKEN,
             {
@@ -163,6 +164,7 @@ const token = (req, res) => {
               idusers: result[0].idusers,
               role: result[0].role,
               email: result[0].email,
+              password: result[0].password,
             },
             process.env.APP_ACCESS_TOKEN,
             { expiresIn: "1m" }
@@ -258,7 +260,9 @@ const changepassword = (req, res) => {
     const password = req.body.password;
     const token = req.params.accessToken;
     const { email } = decode(token);
+    console.log(email);
     const roundNumber = 10;
+
     bcrypt.genSalt(roundNumber, (error, salt) => {
       if (error) {
         res.status(400);
@@ -296,7 +300,7 @@ const changepassword = (req, res) => {
 //update user
 const updateUser = (req, res) => {
   try {
-    const { fullname, email, phonenumber, gender, days, months, years} = req.body;
+    const { fullname, email, phonenumber, gender, days, months, years } = req.body;
     const idusers = req.auth.id;
     const queryUpdate =
       "update users set fullname = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?";
@@ -315,6 +319,81 @@ const updateUser = (req, res) => {
   }
 };
 
+//create new password
+const createnewpassword = (req, res) => {
+
+  try {
+    
+    const roundNumber = 10;
+    const { curpass, newpass } = req.body;
+    // var strcurpass = curpass.toString();
+    // console.log(strcurpass);
+    const idusers = req.auth.id;
+    const queryGetPassword =
+      "select password from users where idusers = ?";
+    const queryUpdatePassWord =
+      "update users set password = ? where  idusers = ?";
+    db.connection.query(queryGetPassword, [idusers], (error, result) => {
+      if (error) throw error;
+      if (result.length < 0) {
+        res.status(401).json({
+          message: "Invalid password"
+        });
+      } else {
+        const hashedPassword = result[0].password.toString(); // Mật khẩu đã được hash
+        
+        bcrypt.compare(curpass, hashedPassword, (err, isMatch) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          if (isMatch) {
+            bcrypt.genSalt(roundNumber, (error, salt) => {
+              if (error) {
+                res.status(400);
+              } else {
+                bcrypt.hash(newpass, salt, (error, hash) => {
+                  if (error) {
+                    res.status(400);
+                  } else {
+                    var data = {
+                      password: hash,
+                    };
+                    db.connection.query(
+                      `update users set password = '${data.password}' where idusers = '${idusers}'`,
+                      (error, result) => {
+                        if (error) {
+                          res.status(400);
+                        } else {
+                          console.log("Thanh cong");
+                          res.status(200).json({
+                            message: "Update is succesfully",
+                          });
+                        }
+                      }
+                    );
+                  }
+                });
+              }
+            });
+          } else {
+            console.log("ko trung");
+            res.status(400).json({
+              message: "password doesn't match",
+            });
+          }
+        });
+
+      }
+    })
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      message: "Server is error",
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -323,4 +402,5 @@ module.exports = {
   forgotpassword,
   changepassword,
   updateUser,
+  createnewpassword,
 };
