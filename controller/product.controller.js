@@ -55,7 +55,6 @@ const addProduct = (req, res) => {
               upload_preset: "products",
             })
             .then((response) => {
-              console.log(response);
               const publicIds = response.public_id;
               db.connection.query(
                 insertImage,
