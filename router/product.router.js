@@ -11,9 +11,10 @@ router.post("/addproduct", productController.addProduct);
 router.get("/getproduct", productController.getProduct);
 
 // update product
-
+router.post("/updateproduct", productController.updateProduct);
 
 // remove product
+
 // router.delete("/removeproduct", authenticateToken, productController.removeProduct);
 
 // get category

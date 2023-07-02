@@ -21,7 +21,6 @@ const addProduct = (req, res) => {
       "insert into color(idsize,namecolor,quantity) values(?,?,?)";
     const insertImage =
       "insert into image(idproducts,avt,publicId) values(?,?,?)";
-    // const selectCategory = "select * from category";
     db.connection.query(
       insertProduct,
       [selectedcategory, nameproducts, promotion, discount, description],
@@ -37,7 +36,7 @@ const addProduct = (req, res) => {
             (error, sizeResult) => {
               if (error) throw error;
               const sizesId = sizeResult.insertId;
-              size.colors.map((color) => {
+              size.color.map((color) => {
                 db.connection.query(
                   insertColor,
                   [sizesId, color.namecolor, color.quantity],
