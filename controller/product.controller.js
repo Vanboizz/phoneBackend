@@ -29,7 +29,6 @@ const addProduct = (req, res) => {
         if (error) throw error;
         //Id products
         const productsId = productResult.insertId;
-        console.log(productResult);
         sizes.map((size) => {
           db.connection.query(
             insertSize,
@@ -37,7 +36,7 @@ const addProduct = (req, res) => {
             (error, sizeResult) => {
               if (error) throw error;
               const sizesId = sizeResult.insertId;
-              size.colors.map((color) => {
+              size.color.map((color) => {
                 db.connection.query(
                   insertColor,
                   [sizesId, color.namecolor, color.quantity],
@@ -113,12 +112,12 @@ const getCategorybyID = (req, res) => {
     const idcate = req.params.id;
     console.log(idcate);
 
-    const selectCategoryId = "select products.idcate, products.idproducts,nameproducts,promotion, discount, description, (SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color',  (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor,'quantity',quantity)) FROM color WHERE color.idsize = size.idsize))) FROM size WHERE size.idproducts = products.idproducts) size,(SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage',idimage,'avt',avt)) FROM image  WHERE image.idproducts = products.idproducts) image from products where products.idcate = ?"
-    
+    const selectCategoryId =
+      "select products.idcate, products.idproducts,nameproducts,promotion, discount, description, (SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color',  (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor,'quantity',quantity)) FROM color WHERE color.idsize = size.idsize))) FROM size WHERE size.idproducts = products.idproducts) size,(SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage',idimage,'avt',avt)) FROM image  WHERE image.idproducts = products.idproducts) image from products where products.idcate = ?";
+
     db.connection.query(selectCategoryId, [idcate], (error, result) => {
-      if (error) 
-        throw error;
-       else {
+      if (error) throw error;
+      else {
         const arr = result.map((value) => {
           return {
             ...value,
@@ -127,24 +126,23 @@ const getCategorybyID = (req, res) => {
           };
         });
         res.status(200).json(arr);
-       }
-    });  
+      }
+    });
   } catch (error) {
-    res.status(400).json({message: "Error server"});
+    res.status(400).json({ message: "Error server" });
   }
-}
+};
 
 const removeProduct = (req, res) => {
   try {
-    
   } catch (error) {
-    res.status(500).json({message: "Error server"})
+    res.status(500).json({ message: "Error server" });
   }
-}
+};
 
 module.exports = {
   addProduct,
   getProduct,
   getCategory,
-  getCategorybyID,  
+  getCategorybyID,
 };

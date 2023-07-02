@@ -6,15 +6,21 @@ const router = require("./router/index");
 const cors = require("cors");
 
 // JSON
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 //cors
 app.use(cors());
 
 // Body Parser
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(
+  bodyParser.urlencoded({
+    limit: "200mb",
+    extended: true,
+    parameterLimit: 1000000,
+  })
+);
+app.use(bodyParser.json({ limit: "200mb" }));
 
 //Router
 app.use(router);
