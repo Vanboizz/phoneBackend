@@ -7,7 +7,7 @@ const decode = require("jwt-decode");
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "20522147@gm.uit.edu.vn",
+    user: "tuankhang951@gmail.com",
     pass: process.env.APP_PASSOFEMAIL,
   },
 });
@@ -123,6 +123,7 @@ const login = (req, res) => {
           res.status(200).json({
             success: true,
             message: "Login is successfully",
+            role: result[0].role,
             accessToken: accessToken,
             refreshToken: refreshToken,
           });
@@ -228,7 +229,7 @@ const forgotpassword = (req, res) => {
           }
         );
         const mailOptions = {
-          from: "20522147@gm.uit.edu.vn",
+          from: "tuankhang951@gmail.com",
           to: result[0].email,
           subject: "Sending Email using Node.js[nodemailer]",
           html: `<p>Please use the below token to reset your password with the <a href="http://localhost:3000/changepassword/${accessToken}">Link</a> api route:</p>`,
@@ -260,7 +261,6 @@ const changepassword = (req, res) => {
     const password = req.body.password;
     const token = req.params.accessToken;
     const { email } = decode(token);
-    console.log(email);
     const roundNumber = 10;
 
     bcrypt.genSalt(roundNumber, (error, salt) => {
@@ -307,9 +307,15 @@ const updateUser = (req, res) => {
     db.connection.query(
       queryUpdate,
       [fullname, email, phonenumber, gender, days, months, years, idusers],
-      (error) => {
+      (error, userupdate) => {
         if (error) throw error;
-        res.status(200).json({ message: "Update is successfull" });
+        db.connection.query(
+          `Select * from users where idusers = ?  `, [idusers], (err, data) => {
+            if (err) throw err;
+            res.status(200).json({ user: data, message: "Update is successfull" });
+          }
+        )
+
       }
     );
   } catch (error) {
@@ -323,11 +329,8 @@ const updateUser = (req, res) => {
 const createnewpassword = (req, res) => {
 
   try {
-    
     const roundNumber = 10;
     const { curpass, newpass } = req.body;
-    // var strcurpass = curpass.toString();
-    // console.log(strcurpass);
     const idusers = req.auth.id;
     const queryGetPassword =
       "select password from users where idusers = ?";
@@ -341,7 +344,7 @@ const createnewpassword = (req, res) => {
         });
       } else {
         const hashedPassword = result[0].password.toString(); // Mật khẩu đã được hash
-        
+
         bcrypt.compare(curpass, hashedPassword, (err, isMatch) => {
           if (err) {
             console.error(err);
@@ -365,9 +368,8 @@ const createnewpassword = (req, res) => {
                         if (error) {
                           res.status(400);
                         } else {
-                          console.log("Thanh cong");
                           res.status(200).json({
-                            message: "Update is succesfully",
+                            message: "Update succesfully",
                           });
                         }
                       }
@@ -377,9 +379,8 @@ const createnewpassword = (req, res) => {
               }
             });
           } else {
-            console.log("ko trung");
             res.status(400).json({
-              message: "password doesn't match",
+              message: "Incorrect current password.",
             });
           }
         });

@@ -9,4 +9,7 @@ router.post("/checkout", auth, checkoutController.checkOut);
 // get checkout
 router.get("/getcheckout", auth, checkoutController.getCheckOut);
 
+// get checkout
+router.post("/detelecheckout", auth, checkoutController.deteleCheckout);    
+
 module.exports = router;

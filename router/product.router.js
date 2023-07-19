@@ -13,8 +13,7 @@ router.get("/getproduct", productController.getProduct);
 router.post("/updateproduct", productController.updateProduct);
 
 // remove product
-
-// router.delete("/removeproduct", authenticateToken, productController.removeProduct);
+router.post("/removeproduct", productController.removeProduct);
 
 // get category
 router.get("/getcategory", productController.getCategory);

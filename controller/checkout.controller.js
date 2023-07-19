@@ -44,7 +44,7 @@ const checkOut = (req, res) => {
               var price;
               data.map((value) => {
                 value.size.map((item) => {
-                  price = (item.pricesize * value.discount) / 100;
+                  price = item.pricesize - ((item.pricesize * value.discount) / 100);
                   return price;
                 });
                 db.connection.query(
@@ -76,7 +76,6 @@ const checkOut = (req, res) => {
                     if (error) throw error;
                     result.forEach((stock) => {
                       const a = stock.quantity - element.quantity;
-                      // console.log(element.quantity);
                       db.connection.query(
                         queryUpdateQuantity,
                         [a, stock.idsize, stock.idcolor],
@@ -102,17 +101,47 @@ const getCheckOut = (req, res) => {
   try {
     const idusers = req.auth.id;
     const querySelect =
-      "select invoice.idiv,invoice.ivday,products.nameproducts,size.namesize,color.namecolor,image.avt,detailinvoice.price,detailinvoice.quantity,invoice.statusiv from detailinvoice,invoice,products,size,color,image where detailinvoice.idiv = invoice.idiv and products.idproducts = detailinvoice.idproducts and size.idsize = detailinvoice.idsize and color.idcolor = detailinvoice.idcolor and image.idimage = detailinvoice.idimage and invoice.idusers = ?";
+      "select invoice.idiv, products.idproducts, invoice.ivday, invoice.totalprice, size.pricesize, products.discount , products.nameproducts,size.namesize,color.namecolor,image.avt,detailinvoice.price,detailinvoice.quantity,invoice.statusiv from detailinvoice,invoice,products,size,color,image where detailinvoice.idiv = invoice.idiv and products.idproducts = detailinvoice.idproducts and size.idsize = detailinvoice.idsize and color.idcolor = detailinvoice.idcolor and image.idimage = detailinvoice.idimage and invoice.idusers = ?";
+
     db.connection.query(querySelect, [idusers], (error, result) => {
       if (error) throw error;
-      res.status(200).json({ result: result });
+
+      db.connection.query("select * from invoice where idusers = ?", [idusers], (error, ivdb) => {
+        if (error) throw error;
+        var arrayfilter = [];
+        for (var i = 0; i < ivdb.length; i++) {
+          var array = result.filter(data => data.idiv === ivdb[i].idiv);
+          arrayfilter = [...arrayfilter, array];
+        }
+        res.status(200).json({ result: arrayfilter });
+      })
     });
   } catch (error) {
     res.status(400).json({ message: "Error Server" });
   }
 };
 
+const deteleCheckout = (req, res) => {
+  try {
+    const { idiv } = req.body
+    const deletedtiv = "delete from detailinvoice where idiv = ?"
+    const deleteiv = "delete from invoice where idiv = ?"
+
+    db.connection.query(deletedtiv, [idiv], (error) => {
+      if (error) throw error;
+      db.connection.query(deleteiv, [idiv], error => {
+        if (error) throw error
+      })
+      res.status(200).json({ message: "Delete order successfully" })
+    })
+
+  } catch (error) {
+    res.status(400).json({ message: "Error server" })
+  }
+}
+
 module.exports = {
   checkOut,
   getCheckOut,
+  deteleCheckout
 };
