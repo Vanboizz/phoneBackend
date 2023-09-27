@@ -10,6 +10,7 @@ router.post("/login", userController.login);
 
 //forgot password
 router.post("/forgotpassword", userController.forgotpassword);
+
 //change passoword
 router.post("/changepassword/:accessToken", userController.changepassword);
 
@@ -21,6 +22,10 @@ router.get("/getuser", authenticateToken, userController.getUserById);
 
 //update user
 router.post("/updateUser", authenticateToken, userController.updateUser);
+
+//update detail address
+
+router.post('/updatedetailaddress', authenticateToken, userController.updatedetailaddress)
 
 //create new password
 router.post("/createnewpassword", authenticateToken, userController.createnewpassword);

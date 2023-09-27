@@ -315,7 +315,6 @@ const updateUser = (req, res) => {
             res.status(200).json({ user: data, message: "Update is successfull" });
           }
         )
-
       }
     );
   } catch (error) {
@@ -325,6 +324,30 @@ const updateUser = (req, res) => {
   }
 };
 
+// updatedetailaddress
+
+const updatedetailaddress = (req, res) => {
+  try {
+    // console.log(req.body.data);
+    const { province, district, ward, detail_address } = req.body.data;
+    const idusers = req.auth.id;
+    console.log(req.body.data);
+    const queryUpdateaddress =
+      "update users set province = ?, district = ?, wards = ? , address = ? where idusers = ?";
+    db.connection.query(
+      queryUpdateaddress,
+      [province, district, ward, detail_address, idusers],
+      (error, userupdate) => {
+        if (error) throw error;
+        res.status(200).json({ result: true });
+      }
+    );
+  } catch (error) {
+    res.status(500).json({
+      message: "Server is error",
+    });
+  }
+};
 //create new password
 const createnewpassword = (req, res) => {
 
@@ -404,4 +427,5 @@ module.exports = {
   changepassword,
   updateUser,
   createnewpassword,
+  updatedetailaddress,
 };
