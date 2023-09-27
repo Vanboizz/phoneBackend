@@ -424,6 +424,37 @@ const getProduct = (req, res) => {
   }
 };
 
+const getProductDetail = (req, res) => {
+  try {
+    const idproducts = req.params.idproducts;
+    const idusers = req.auth.id;
+    const selectProductsById = "select products.idcate, products.idproducts,nameproducts,promotion, discount, description, (SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color',  (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor,'quantity',quantity)) FROM color WHERE color.idsize = size.idsize))) FROM size WHERE size.idproducts = products.idproducts) size,(SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage',idimage,'avt',avt)) FROM image  WHERE image.idproducts = products.idproducts) image from products where products.idproducts = ?"
+
+    const selectListFavourite = "select * from favorite where favorite.idproducts = ? and idusers = ?"
+    let isHeart = false
+    db.connection.query(selectListFavourite, [idproducts, idusers], (error, result) => {
+      if (error) throw error;
+      if (result && result.length !== 0) {
+        isHeart = true
+      }
+    })
+    db.connection.query(selectProductsById, [idproducts], (error, result) => {
+      if (error) throw error;
+      else {
+        const response = {
+          ...result[0], // Lấy kết quả đầu tiên, vì chỉ cần một đối tượng JSON
+          size: JSON.parse(result[0].size),
+          image: JSON.parse(result[0].image),
+          isHeart
+        };
+        res.status(200).json(response);
+      }
+    })
+  } catch (error) {
+    res.status(400).json({ message: "Error server" });
+  }
+}
+
 const getCategory = (req, res) => {
   try {
     const selectCategory = "select * from category";
@@ -476,6 +507,7 @@ const removeProduct = (req, res) => {
 module.exports = {
   addProduct,
   getProduct,
+  getProductDetail,
   getCategory,
   getCategorybyID,
   updateProduct,

@@ -1,13 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const productController = require("../controller/product.controller");
-const authenticateToken = require("../middleware/auth");
+const auth = require("../middleware/auth")
 
 //add product
 router.post("/addproduct", productController.addProduct);
 
 //get product
 router.get("/getproduct", productController.getProduct);
+
+// get product detail
+router.get("/getproductdetail/:idproducts", auth, productController.getProductDetail);
 
 // update product
 router.post("/updateproduct", productController.updateProduct);
