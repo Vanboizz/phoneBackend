@@ -21,6 +21,7 @@ const authenticateToken = (req, res, next) => {
       }
     });
   } else {
+    next()
     res.status(500).json({
       success: false,
       message: "Access denied! authorized",
