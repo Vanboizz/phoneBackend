@@ -10,7 +10,7 @@ router.post("/addproduct", productController.addProduct);
 router.get("/getproduct", productController.getProduct);
 
 // get product detail
-router.get("/getproductdetail/:idproducts", auth, productController.getProductDetail);
+router.get("/getproductdetail/:idproducts", productController.getProductDetail);
 
 // update product
 router.post("/updateproduct", productController.updateProduct);

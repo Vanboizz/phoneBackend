@@ -1,5 +1,7 @@
 const cloudinary = require("../utils/cloudinary");
 const db = require("../connect/database");
+const jwt = require("jsonwebtoken")
+require("dotenv").config();
 
 const addProduct = (req, res) => {
   try {
@@ -427,29 +429,47 @@ const getProduct = (req, res) => {
 const getProductDetail = (req, res) => {
   try {
     const idproducts = req.params.idproducts;
-    const idusers = req.auth.id;
-    const selectProductsById = "select products.idcate, products.idproducts,nameproducts,promotion, discount, description, (SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color',  (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor,'quantity',quantity)) FROM color WHERE color.idsize = size.idsize))) FROM size WHERE size.idproducts = products.idproducts) size,(SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage',idimage,'avt',avt)) FROM image  WHERE image.idproducts = products.idproducts) image from products where products.idproducts = ?"
+    const selectProductsById = "SELECT products.idcate, products.idproducts, nameproducts, promotion, discount, description, (SELECT json_arrayagg(JSON_OBJECT('namesize', namesize, 'pricesize', pricesize, 'idsize', idsize, 'color', (SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor', idcolor, 'namecolor', namecolor, 'quantity', quantity)) FROM color WHERE color.idsize = size.idsize))) FROM size WHERE size.idproducts = products.idproducts) size, (SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage', idimage, 'avt', avt)) FROM image WHERE image.idproducts = products.idproducts) image FROM products WHERE products.idproducts = ?";
 
-    const selectListFavourite = "select * from favorite where favorite.idproducts = ? and idusers = ?"
-    let isHeart = false
-    db.connection.query(selectListFavourite, [idproducts, idusers], (error, result) => {
-      if (error) throw error;
-      if (result && result.length !== 0) {
-        isHeart = true
-      }
-    })
+    const selectListFavourite = "SELECT * FROM favorite WHERE favorite.idproducts = ? AND idusers = ?";
+    let isHeart = false;
+    let token = req.headers['authorization'];
+
+    // Thực hiện truy vấn để lấy thông tin sản phẩm
     db.connection.query(selectProductsById, [idproducts], (error, result) => {
-      if (error) throw error;
-      else {
+      if (error) {
+        throw error;
+      } else {
         const response = {
-          ...result[0], // Lấy kết quả đầu tiên, vì chỉ cần một đối tượng JSON
+          ...result[0],
           size: JSON.parse(result[0].size),
           image: JSON.parse(result[0].image),
           isHeart
         };
-        res.status(200).json(response);
+
+        // Nếu có token và đã đăng nhập, thực hiện truy vấn danh sách yêu thích
+        if (token) {
+          token = token.slice(7);
+          jwt.verify(token, process.env.APP_ACCESS_TOKEN, (error, decoded) => {
+            if (!error) {
+              db.connection.query(selectListFavourite, [idproducts, decoded.idusers], (error, favoriteResult) => {
+                if (error) throw error;
+                if (favoriteResult && favoriteResult.length !== 0) {
+                  response.isHeart = true; // Người dùng đã thích sản phẩm
+                }
+                res.status(200).json(response);
+              });
+            } else {
+              // Lỗi xác minh token, trả về sản phẩm mà không cho phép thích
+              res.status(200).json(response);
+            }
+          });
+        } else {
+          // Không có token, trả về sản phẩm mà không cho phép thích
+          res.status(200).json(response);
+        }
       }
-    })
+    });
   } catch (error) {
     res.status(400).json({ message: "Error server" });
   }
