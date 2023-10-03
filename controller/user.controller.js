@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const decode = require("jwt-decode");
+const cloudinary = require("../utils/cloudinary");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -14,13 +15,14 @@ const transporter = nodemailer.createTransport({
 //register
 const register = (req, res) => {
   try {
-    const { fullname, phonenumber, email, password } = req.body;
+    const { firstname, lastname, avtuser, phonenumber, email, password } = req.body;
     const querySelect = "select email,password from users where email = ?";
     const queryInsert =
-      "insert into users(fullname,phonenumber,email,password,role) values(?,?,?,?,?)";
+      "insert into users(firstname, lastname, avtuser, publicIdUser, phonenumber, email, password, role) values(?,?,?,?,?,?,?)";
     // Kiểm tra rỗng
     if (
-      fullname === "" ||
+      firstname === "" ||
+      lastname === "" ||
       phonenumber === "" ||
       email === "" ||
       password === ""
@@ -41,26 +43,35 @@ const register = (req, res) => {
               message: "This email have been already existed",
             });
           }
-        } else {
+        } 
+        else {
           // hash
           bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
               throw err;
             } else {
-              db.connection.query(
-                queryInsert,
-                [fullname, phonenumber, email, hash, "user"],
-                (err) => {
-                  if (err) {
-                    throw err;
-                  } else {
-                    res.status(200).json({
-                      success: true,
-                      message: "The user has been registerd with us!",
-                    });
-                  }
-                }
-              );
+              
+              cloudinary.uploader
+                .upload(avtuser, {
+                  upload_preset: "users",
+                })
+                .then((response) => {
+                  const publicId = response.public_id;
+                  db.connection.query(
+                    queryInsert,
+                    [firstname, lastname, avtuser, publicId, phonenumber, email, hash, "user"],
+                    (err) => {
+                      if (err) {
+                        throw err;
+                      } else {
+                        res.status(200).json({
+                          success: true,
+                          message: "Register successfully",
+                        });
+                      }
+                    }
+                  );
+                });
             }
           });
         }

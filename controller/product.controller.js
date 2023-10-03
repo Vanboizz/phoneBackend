@@ -128,6 +128,7 @@ const updateProduct = async (req, res) => {
             if ((i < images.length) && (images[i].avt !== imagedb.avt)) {
 
               cloudinary.uploader.destroy(imagedb.publicId);
+              
               cloudinary.uploader
                 .upload(images[i].avt, {
                   upload_preset: "products",
