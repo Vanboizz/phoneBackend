@@ -8,7 +8,7 @@ const checkOut = (req, res) => {
       "select * ,(SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color',(SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor)) FROM color WHERE color.idcolor = cart.idcolor))) FROM size WHERE size.idsize = cart.idsize ) size,(SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage',idimage,'avt',avt)) FROM image WHERE image.idproducts = products.idproducts) image from products,cart where idusers = ? and cart.idproducts = products.idproducts;";
     const querySelect = "select * from users where idusers = ? ";
     const queryInsert =
-      "insert into invoice(idusers,ivday,fullnamereceive,emailreceive,addressreceive,phonenumberreceive,statusiv,totalprice) values(?,now(),?,?,?,?,?,?)";
+      "insert into invoice(idusers,ivday,fullnamereceive,emailreceive,addressreceive,phonenumberreceive,statusiv,totalprice,type) values(?,now(),?,?,?,?,?,?,?)";
     const queryInsertInvoiceDetail =
       "insert into detailinvoice(idiv,idproducts,idsize,idcolor,idimage,price,quantity) values(?,?,?,?,?,?,?)";
     const querySelectQuantity =
@@ -28,6 +28,7 @@ const checkOut = (req, res) => {
             phonenumber,
             "UnPaid",
             totalprice,
+            "Direct"
           ],
           (error, result) => {
             if (error) throw error;
