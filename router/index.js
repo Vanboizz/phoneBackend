@@ -6,6 +6,7 @@ const checkoutRouter = require("./checkout.router");
 const favoriteRouter = require("./favorite.router")
 const evaluateRouter = require("./evaluate.router")
 const paypalRouter = require("./paypal.router")
+const commentRouter = require("./comment.router")
 const express = require("express");
 const router = express.Router();
 
@@ -17,5 +18,7 @@ router.use("/invoice", checkoutRouter);
 router.use("/favorite", favoriteRouter)
 router.use("/evaluate", evaluateRouter)
 router.use("/my-server", paypalRouter)
+router.use("/comment", commentRouter)
+
 
 module.exports = router;
