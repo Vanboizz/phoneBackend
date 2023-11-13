@@ -2,14 +2,15 @@ const db = require("../connect/database");
 
 const addCart = (req, res) => {
   try {
-    const { idproducts, idsize, idcolor, idimage } = req.body;
+    const { idproducts, idsize, idcolor, idimage, maxquantity } = req.body;
     const idusers = req.auth.id;
     const querySelect =
       "select * from products,color,size,cart where cart.idsize = ? and cart.idcolor = ? and idusers = ?";
     const queryUpdate =
       "Update cart set quantity = ? where idsize = ? and idcolor = ?";
     const queryInsert =
-      "Insert into cart(idproducts,idsize,idcolor,idimage,idusers,quantity) values(?,?,?,?,?,1)";
+      "Insert into cart(idproducts,idsize,idcolor,idimage,idusers,quantity, maxquantity) values(?,?,?,?,?,?,?)";
+
     if (
       idproducts === "" ||
       idsize === "" ||
@@ -47,7 +48,7 @@ const addCart = (req, res) => {
             // Sản phẩm chưa tồn tại trong giỏ hàng, thêm sản phẩm vào bảng cart
             db.connection.query(
               queryInsert,
-              [idproducts, idsize, idcolor, idimage, idusers, 1],
+              [idproducts, idsize, idcolor, idimage, idusers, 1, maxquantity],
               (error) => {
                 if (error) throw error;
                 res.status(200).json({ message: "Product added to cart" });
@@ -102,7 +103,7 @@ const deleteCart = (req, res) => {
         if (result.length > 0) {
           db.connection.query(queryDelete, [idsize, idcolor], (error) => {
             if (error) throw error;
-            res.status(200);
+            res.status(200).json({ message: "delete success" });
           });
         }
       }

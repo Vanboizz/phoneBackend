@@ -15,10 +15,10 @@ const transporter = nodemailer.createTransport({
 //register
 const register = (req, res) => {
   try {
-    const { firstname, lastname, avtuser, phonenumber, email, password } = req.body;
+    const { firstname, lastname, avatar, phonenumber, email, password } = req.body;
     const querySelect = "select email,password from users where email = ?";
     const queryInsert =
-      "insert into users(firstname, lastname, avtuser, publicIdUser, phonenumber, email, password, role) values(?,?,?,?,?,?,?)";
+      "insert into users(firstname, lastname, avtuser, publicIdUser, phonenumber, email, password, role) values(?,?,?,?,?,?,?,?)";
     // Kiểm tra rỗng
     if (
       firstname === "" ||
@@ -43,23 +43,22 @@ const register = (req, res) => {
               message: "This email have been already existed",
             });
           }
-        } 
+        }
         else {
           // hash
           bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
               throw err;
             } else {
-              
               cloudinary.uploader
-                .upload(avtuser, {
-                  upload_preset: "users",
+                .upload(avatar, {
+                  upload_preset: "users"
                 })
                 .then((response) => {
                   const publicId = response.public_id;
                   db.connection.query(
                     queryInsert,
-                    [firstname, lastname, avtuser, publicId, phonenumber, email, hash, "user"],
+                    [firstname, lastname, avatar, publicId, phonenumber, email, hash, "user"],
                     (err) => {
                       if (err) {
                         throw err;
@@ -71,7 +70,10 @@ const register = (req, res) => {
                       }
                     }
                   );
-                });
+                })
+                .catch(error => {
+                  console.log(error)
+                })
             }
           });
         }
@@ -311,13 +313,13 @@ const changepassword = (req, res) => {
 //update user
 const updateUser = (req, res) => {
   try {
-    const { fullname, email, phonenumber, gender, days, months, years } = req.body;
+    const { firstName, lastName, avatar, email, phonenumber, gender, days, months, years } = req.body;
     const idusers = req.auth.id;
     const queryUpdate =
-      "update users set fullname = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?";
+      "update users set firstName = ?, lastName = ?, avtuser = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?";
     db.connection.query(
       queryUpdate,
-      [fullname, email, phonenumber, gender, days, months, years, idusers],
+      [firstName, lastName, avatar , email, phonenumber, gender, days, months, years, idusers],
       (error, userupdate) => {
         if (error) throw error;
         db.connection.query(
