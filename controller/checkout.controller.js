@@ -29,6 +29,7 @@ const checkOut = (req, res) => {
             phonenumber,
             "UnPaid",
             totalprice,
+            "Direct"
           ],
           (error, result) => {
             if (error) throw error;
