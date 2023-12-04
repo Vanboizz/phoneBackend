@@ -43,14 +43,14 @@ const createOrder = async (data) => {
  * Capture payment for an order
  * @see https://developer.paypal.com/docs/api/orders/v2/#orders_capture
  */
-const capturePayment = async (orderId, fullname, email, address, phonenumber, cost, idusers) => {
+const capturePayment = async (orderId, firstname, lastname, email, address, phonenumber, cost, idusers) => {
     const accessToken = await generateAccessToken();
     const url = `${base}/v2/checkout/orders/${orderId}/capture`;
     const querySelectCart =
         "select * ,(SELECT json_arrayagg(JSON_OBJECT('namesize',namesize,'pricesize',pricesize,'idsize',idsize,'color',(SELECT JSON_ARRAYAGG(JSON_OBJECT('idcolor',idcolor,'namecolor',namecolor)) FROM color WHERE color.idcolor = cart.idcolor))) FROM size WHERE size.idsize = cart.idsize ) size,(SELECT JSON_ARRAYAGG(JSON_OBJECT('idimage',idimage,'avt',avt)) FROM image WHERE image.idproducts = products.idproducts) image from products,cart where idusers = ? and cart.idproducts = products.idproducts;";
     const querySelect = "select * from users where idusers = ? ";
     const queryInsert =
-        "insert into invoice(idusers,ivday,fullnamereceive,emailreceive,addressreceive,phonenumberreceive,statusiv,totalprice,type) values(?,now(),?,?,?,?,?,?,?)";
+        "insert into invoice(idusers,ivday,firstnamereceive,lastnamereceive, emailreceive,addressreceive,phonenumberreceive,statusiv,totalprice,type) values(?,now(),?,?,?,?,?,?,?,?)";
     const queryInsertInvoiceDetail =
         "insert into detailinvoice(idiv,idproducts,idsize,idcolor,idimage,price,quantity) values(?,?,?,?,?,?,?)";
     const querySelectQuantity =
@@ -80,7 +80,8 @@ const capturePayment = async (orderId, fullname, email, address, phonenumber, co
                     queryInsert,
                     [
                         idusers,
-                        fullname,
+                        firstname,
+                        lastname,
                         email,
                         address,
                         phonenumber,

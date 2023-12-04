@@ -20,6 +20,9 @@ router.post("/token", userController.token);
 //get user
 router.get("/getuser", authenticateToken, userController.getUserById);
 
+// get all user 
+router.get('/getusers', authenticateToken, userController.getUsers)
+
 //update user
 router.post("/updateUser", authenticateToken, userController.updateUser);
 

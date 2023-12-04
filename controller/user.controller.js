@@ -218,6 +218,21 @@ const getUserById = (req, res) => {
   }
 };
 
+const getUsers = (req, res) => {
+  try {
+    const querySelect = "select * from users";
+    db.connection.query(querySelect, (error, result) => {
+      if (error) throw error;
+      else {
+        console.log(result);
+        res.status(200).json(result);
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Error Server" });
+  }
+}
+
 //forgot password
 const forgotpassword = (req, res) => {
   try {
@@ -319,7 +334,7 @@ const updateUser = (req, res) => {
       "update users set firstName = ?, lastName = ?, avtuser = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?";
     db.connection.query(
       queryUpdate,
-      [firstName, lastName, avatar , email, phonenumber, gender, days, months, years, idusers],
+      [firstName, lastName, avatar, email, phonenumber, gender, days, months, years, idusers],
       (error, userupdate) => {
         if (error) throw error;
         db.connection.query(
@@ -341,10 +356,8 @@ const updateUser = (req, res) => {
 
 const updatedetailaddress = (req, res) => {
   try {
-    // console.log(req.body.data);
     const { province, district, ward, detail_address } = req.body.data;
     const idusers = req.auth.id;
-    console.log(req.body.data);
     const queryUpdateaddress =
       "update users set province = ?, district = ?, wards = ? , address = ? where idusers = ?";
     db.connection.query(
@@ -441,4 +454,5 @@ module.exports = {
   updateUser,
   createnewpassword,
   updatedetailaddress,
+  getUsers,
 };

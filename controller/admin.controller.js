@@ -4,7 +4,6 @@ const bcrypt = require("bcrypt");
 const register = (req, res) => {
   try {
     const { avatar, firstname, lastname, email, password } = req.body;
-    console.log(req.body);
     const querySelect = "select email, password from users where email = ?";
     const queryInsert =
       "insert into users(avtuser, firstname, lastname, email, password, role) values(?,?,?,?,?,?)";
@@ -33,11 +32,12 @@ const register = (req, res) => {
               db.connection.query(
                 queryInsert,
                 [avatar, firstname, lastname, email, hash, "admin"],
-                (err) => {
+                (err, result) => {
                   if (err) {
                     throw err;
                   } else {
                     res.status(200).json({
+                      idAdmin: result?.insertId,
                       success: true,
                       message: "The user has been registerd with us!",
                     });
