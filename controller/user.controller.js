@@ -1,14 +1,14 @@
-const db = require("../connect/database");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const decode = require("jwt-decode");
-const cloudinary = require("../utils/cloudinary");
+const db = require('../connect/database');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const decode = require('jwt-decode');
+const cloudinary = require('../utils/cloudinary');
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  service: 'gmail',
   auth: {
-    user: "tuankhang951@gmail.com",
+    user: 'tuankhang951@gmail.com',
     pass: process.env.APP_PASSOFEMAIL,
   },
 });
@@ -16,20 +16,20 @@ const transporter = nodemailer.createTransport({
 const register = (req, res) => {
   try {
     const { firstname, lastname, avatar, phonenumber, email, password } = req.body;
-    const querySelect = "select email,password from users where email = ?";
+    const querySelect = 'select email,password from users where email = ?';
     const queryInsert =
-      "insert into users(firstname, lastname, avtuser, publicIdUser, phonenumber, email, password, role) values(?,?,?,?,?,?,?,?)";
+      'insert into users(firstname, lastname, avtuser, publicIdUser, phonenumber, email, password, role) values(?,?,?,?,?,?,?,?)';
     // Kiểm tra rỗng
     if (
-      firstname === "" ||
-      lastname === "" ||
-      phonenumber === "" ||
-      email === "" ||
-      password === ""
+      firstname === '' ||
+      lastname === '' ||
+      phonenumber === '' ||
+      email === '' ||
+      password === ''
     ) {
       res.status(400).json({
         success: false,
-        message: "Please fill in all field",
+        message: 'Please fill in all field',
       });
     } else {
       db.connection.query(querySelect, [email], (err, result) => {
@@ -40,11 +40,10 @@ const register = (req, res) => {
           } else {
             res.status(401).json({
               success: false,
-              message: "This email have been already existed",
+              message: 'This email have been already existed',
             });
           }
-        }
-        else {
+        } else {
           // hash
           bcrypt.hash(password, 10, (err, hash) => {
             if (err) {
@@ -52,28 +51,28 @@ const register = (req, res) => {
             } else {
               cloudinary.uploader
                 .upload(avatar, {
-                  upload_preset: "users"
+                  upload_preset: 'users',
                 })
                 .then((response) => {
                   const publicId = response.public_id;
                   db.connection.query(
                     queryInsert,
-                    [firstname, lastname, avatar, publicId, phonenumber, email, hash, "user"],
+                    [firstname, lastname, avatar, publicId, phonenumber, email, hash, 'user'],
                     (err) => {
                       if (err) {
                         throw err;
                       } else {
                         res.status(200).json({
                           success: true,
-                          message: "Register successfully",
+                          message: 'Register successfully',
                         });
                       }
                     }
                   );
                 })
-                .catch(error => {
-                  console.log(error)
-                })
+                .catch((error) => {
+                  console.log(error);
+                });
             }
           });
         }
@@ -82,7 +81,7 @@ const register = (req, res) => {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server is error",
+      message: 'Server is error',
     });
   }
 };
@@ -91,20 +90,16 @@ const register = (req, res) => {
 const login = (req, res) => {
   try {
     const { email, password } = req.body;
-    const querySelect =
-      "select * from users where email = ?";
-    const update = "update users set refreshToken = ? where email = ?";
+    const querySelect = 'select * from users where email = ?';
+    const update = 'update users set refreshToken = ? where email = ?';
     db.connection.query(querySelect, [email], (error, result) => {
       if (!result[0]) {
         res.status(401).json({
           success: false,
-          message: "Invalid Email",
+          message: 'Invalid Email',
         });
       } else if (result.length !== 0) {
-        const comparePassword = bcrypt.compareSync(
-          password,
-          result[0].password
-        );
+        const comparePassword = bcrypt.compareSync(password, result[0].password);
 
         if (comparePassword) {
           //access token
@@ -117,7 +112,7 @@ const login = (req, res) => {
             },
             process.env.APP_ACCESS_TOKEN,
             {
-              expiresIn: "1y",
+              expiresIn: '1y',
             }
           );
           //refresh token
@@ -129,13 +124,13 @@ const login = (req, res) => {
             },
             process.env.APP_REFRESH_TOKEN,
             {
-              expiresIn: "1y",
+              expiresIn: '1y',
             }
           );
           db.connection.query(update, [refreshToken, email]);
           res.status(200).json({
             success: true,
-            message: "Login is successfully",
+            message: 'Login is successfully',
             role: result[0].role,
             accessToken: accessToken,
             refreshToken: refreshToken,
@@ -143,20 +138,20 @@ const login = (req, res) => {
         } else {
           res.status(401).json({
             success: false,
-            message: "Invalid Password",
+            message: 'Invalid Password',
           });
         }
       } else {
         res.status(401).json({
           success: false,
-          message: "Invalid Email And Password",
+          message: 'Invalid Email And Password',
         });
       }
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Is Error",
+      message: 'Server Is Error',
     });
   }
 };
@@ -165,13 +160,11 @@ const login = (req, res) => {
 const token = (req, res) => {
   try {
     const { refreshToken } = req.body;
-    const querySelect = "select * from users where refreshToken = ?";
+    const querySelect = 'select * from users where refreshToken = ?';
     if (refreshToken) {
       db.connection.query(querySelect, [refreshToken], (err, result) => {
         if (!result[0]) {
-          res
-            .status(401)
-            .json({ success: false, message: "Invalid RefreshToken" });
+          res.status(401).json({ success: false, message: 'Invalid RefreshToken' });
         } else {
           const token = jwt.sign(
             {
@@ -181,7 +174,7 @@ const token = (req, res) => {
               password: result[0].password,
             },
             process.env.APP_ACCESS_TOKEN,
-            { expiresIn: "1m" }
+            { expiresIn: '1m' }
           );
           res.status(200).json({
             token: token,
@@ -191,13 +184,13 @@ const token = (req, res) => {
     } else {
       res.status(401).json({
         success: false,
-        message: "Invalid request",
+        message: 'Invalid request',
       });
     }
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Is Error",
+      message: 'Server Is Error',
     });
   }
 };
@@ -206,7 +199,7 @@ const token = (req, res) => {
 const getUserById = (req, res) => {
   try {
     const idusers = req.auth.id;
-    const querySelect = "select * from users where idusers = ? ";
+    const querySelect = 'select * from users where idusers = ? ';
     db.connection.query(querySelect, [idusers], (error, result) => {
       if (error) throw error;
       else {
@@ -214,13 +207,13 @@ const getUserById = (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({ message: "Error Server" });
+    res.status(400).json({ message: 'Error Server' });
   }
 };
 
 const getUsers = (req, res) => {
   try {
-    const querySelect = "select * from users";
+    const querySelect = 'select * from users';
     db.connection.query(querySelect, (error, result) => {
       if (error) throw error;
       else {
@@ -229,20 +222,20 @@ const getUsers = (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({ message: "Error Server" });
+    res.status(400).json({ message: 'Error Server' });
   }
-}
+};
 
 //forgot password
 const forgotpassword = (req, res) => {
   try {
     const { email } = req.body;
-    const query = "select * from users where email = ?";
+    const query = 'select * from users where email = ?';
     db.connection.query(query, [email], (err, result) => {
       if (result.length <= 0) {
         res.status(401).json({
           success: false,
-          message: "Invalid email",
+          message: 'Invalid email',
         });
       } else {
         const accessToken = jwt.sign(
@@ -253,13 +246,13 @@ const forgotpassword = (req, res) => {
           },
           process.env.APP_ACCESS_TOKEN,
           {
-            expiresIn: "1m",
+            expiresIn: '1m',
           }
         );
         const mailOptions = {
-          from: "tuankhang951@gmail.com",
+          from: 'tuankhang951@gmail.com',
           to: result[0].email,
-          subject: "Sending Email using Node.js[nodemailer]",
+          subject: 'Sending Email using Node.js[nodemailer]',
           html: `<p>Please use the below token to reset your password with the <a href="http://localhost:3000/changepassword/${accessToken}">Link</a> api route:</p>`,
         };
         transporter.sendMail(mailOptions, (err, info) => {
@@ -271,14 +264,14 @@ const forgotpassword = (req, res) => {
         });
         res.status(200).json({
           success: true,
-          message: "Success",
+          message: 'Success',
           accessToken: accessToken,
         });
       }
     });
   } catch (error) {
     res.status(400).json({
-      message: "Not exists email",
+      message: 'Not exists email',
     });
   }
 };
@@ -309,7 +302,7 @@ const changepassword = (req, res) => {
                   res.status(400);
                 } else {
                   res.status(200).json({
-                    message: "Update is succesfully",
+                    message: 'Update is succesfully',
                   });
                 }
               }
@@ -320,7 +313,7 @@ const changepassword = (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Server is error",
+      message: 'Server is error',
     });
   }
 };
@@ -328,26 +321,25 @@ const changepassword = (req, res) => {
 //update user
 const updateUser = (req, res) => {
   try {
-    const { firstName, lastName, avatar, email, phonenumber, gender, days, months, years } = req.body;
+    const { firstName, lastName, avatar, email, phonenumber, gender, days, months, years } =
+      req.body;
     const idusers = req.auth.id;
     const queryUpdate =
-      "update users set firstName = ?, lastName = ?, avtuser = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?";
+      'update users set firstName = ?, lastName = ?, avtuser = ?, email = ?, phonenumber = ?, gender = ?, days = ?, months = ?, years = ? where idusers = ?';
     db.connection.query(
       queryUpdate,
       [firstName, lastName, avatar, email, phonenumber, gender, days, months, years, idusers],
       (error, userupdate) => {
         if (error) throw error;
-        db.connection.query(
-          `Select * from users where idusers = ?  `, [idusers], (err, data) => {
-            if (err) throw err;
-            res.status(200).json({ user: data, message: "Update is successfull" });
-          }
-        )
+        db.connection.query(`Select * from users where idusers = ?  `, [idusers], (err, data) => {
+          if (err) throw err;
+          res.status(200).json({ user: data, message: 'Update is successfull' });
+        });
       }
     );
   } catch (error) {
     res.status(500).json({
-      message: "Server is error",
+      message: 'Server is error',
     });
   }
 };
@@ -359,7 +351,7 @@ const updatedetailaddress = (req, res) => {
     const { province, district, ward, detail_address } = req.body.data;
     const idusers = req.auth.id;
     const queryUpdateaddress =
-      "update users set province = ?, district = ?, wards = ? , address = ? where idusers = ?";
+      'update users set province = ?, district = ?, wards = ? , address = ? where idusers = ?';
     db.connection.query(
       queryUpdateaddress,
       [province, district, ward, detail_address, idusers],
@@ -370,26 +362,23 @@ const updatedetailaddress = (req, res) => {
     );
   } catch (error) {
     res.status(500).json({
-      message: "Server is error",
+      message: 'Server is error',
     });
   }
 };
 //create new password
 const createnewpassword = (req, res) => {
-
   try {
     const roundNumber = 10;
     const { curpass, newpass } = req.body;
     const idusers = req.auth.id;
-    const queryGetPassword =
-      "select password from users where idusers = ?";
-    const queryUpdatePassWord =
-      "update users set password = ? where  idusers = ?";
+    const queryGetPassword = 'select password from users where idusers = ?';
+    const queryUpdatePassWord = 'update users set password = ? where  idusers = ?';
     db.connection.query(queryGetPassword, [idusers], (error, result) => {
       if (error) throw error;
       if (result.length < 0) {
         res.status(401).json({
-          message: "Invalid password"
+          message: 'Invalid password',
         });
       } else {
         const hashedPassword = result[0].password.toString(); // Mật khẩu đã được hash
@@ -418,7 +407,7 @@ const createnewpassword = (req, res) => {
                           res.status(400);
                         } else {
                           res.status(200).json({
-                            message: "Update succesfully",
+                            message: 'Update succesfully',
                           });
                         }
                       }
@@ -429,17 +418,16 @@ const createnewpassword = (req, res) => {
             });
           } else {
             res.status(400).json({
-              message: "Incorrect current password.",
+              message: 'Incorrect current password.',
             });
           }
         });
-
       }
-    })
+    });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "Server is error",
+      message: 'Server is error',
     });
   }
 };
