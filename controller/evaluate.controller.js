@@ -73,9 +73,9 @@ const getEvaluate = (req, res) => {
 
         if (starRating) {
             queryGetEvaluate =
-                "SELECT * FROM evaluate WHERE idproducts = ? AND JSON_EXTRACT(starnumber, '$.number') = ? ORDER BY evaluateday DESC";
+                "SELECT * FROM evaluate, users WHERE idproducts = ? and evaluate.idusers = users.idusers  AND JSON_EXTRACT(starnumber, '$.number') = ? ORDER BY evaluateday DESC";
         } else {
-            queryGetEvaluate = "SELECT * FROM evaluate WHERE idproducts = ? ORDER BY evaluateday DESC";
+            queryGetEvaluate = "SELECT * FROM evaluate, users WHERE idproducts = ? and evaluate.idusers = users.idusers ORDER BY evaluateday DESC";
         }
 
         db.connection.query(queryGetEvaluate, [idproducts, starRating], (error, result) => {
@@ -119,8 +119,42 @@ const getStatisticsOfReview = (req, res) => {
     }
 }
 
+
+
+const getAllEvaluate = (req, res) => {
+    try {
+        const starRating = parseInt(req.query.starRating);
+        let queryGetEvaluate;
+
+        if (starRating) {
+            queryGetEvaluate =
+                "SELECT * FROM evaluate,products WHERE evaluate.idproducts = products.idproducts AND JSON_EXTRACT(starnumber, '$.number') = ? ORDER BY evaluateday DESC";
+        } else {
+            queryGetEvaluate = "SELECT * FROM evaluate,products WHERE evaluate.idproducts = products.idproducts ORDER BY evaluateday DESC";
+        }
+
+        db.connection.query(queryGetEvaluate, [starRating], (error, result) => {
+            if (error) throw error;
+            const arr = result.map(value => {
+                return {
+                    ...value,
+                    images: JSON.parse(value.images),
+                    starnumber: JSON.parse(value.starnumber),
+                    performance: JSON.parse(value.performance),
+                    batterylife: JSON.parse(value.batterylife),
+                    cameraquantity: JSON.parse(value.cameraquantity)
+                };
+            });
+            res.status(200).json({ data: arr });
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Error Server.' });
+    }
+}
+
 module.exports = {
     addEvaluate,
     getEvaluate,
-    getStatisticsOfReview
+    getStatisticsOfReview,
+    getAllEvaluate
 }

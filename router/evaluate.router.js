@@ -11,6 +11,8 @@ router.get("/getEvaluate/:idproducts", evaluateController.getEvaluate)
 
 router.get("/getStatisticsOfReview/:idproducts", evaluateController.getStatisticsOfReview)
 
+router.get("/getAllEvaluate", evaluateController.getAllEvaluate)
+
 
 // router.post("/upload", uploader.array('file'), async (req, res) => {
 //     try {
