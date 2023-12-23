@@ -217,7 +217,6 @@ const getUsers = (req, res) => {
     db.connection.query(querySelect, (error, result) => {
       if (error) throw error;
       else {
-        console.log(result);
         res.status(200).json(result);
       }
     });

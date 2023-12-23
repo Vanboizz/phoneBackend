@@ -1,18 +1,17 @@
-const express = require("express")
-const router = express.Router()
-const evaluateController = require("../controller/evaluate.controller.js")
-const auth = require("../middleware/auth.js")
+const express = require('express');
+const router = express.Router();
+const evaluateController = require('../controller/evaluate.controller.js');
+const auth = require('../middleware/auth.js');
 // const uploader = require("../multer/multer.js")
 // const cloudinary = require("../utils/cloudinary.js")
 
-router.post("/addEvaluate", auth, evaluateController.addEvaluate)
+router.post('/addEvaluate', auth, evaluateController.addEvaluate);
 
-router.get("/getEvaluate/:idproducts", evaluateController.getEvaluate)
+router.get('/getEvaluate/:idproducts', evaluateController.getEvaluate);
 
-router.get("/getStatisticsOfReview/:idproducts", evaluateController.getStatisticsOfReview)
+router.get('/getStatisticsOfReview/:idproducts', evaluateController.getStatisticsOfReview);
 
-router.get("/getAllEvaluate", evaluateController.getAllEvaluate)
-
+router.get('/getAllEvaluate', evaluateController.getAllEvaluate);
 
 // router.post("/upload", uploader.array('file'), async (req, res) => {
 //     try {
@@ -34,4 +33,4 @@ router.get("/getAllEvaluate", evaluateController.getAllEvaluate)
 //     }
 // })
 
-module.exports = router
+module.exports = router;
